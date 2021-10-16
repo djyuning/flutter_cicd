@@ -10,17 +10,29 @@ jobs:
     name: 构建 Android 生产环境 Apk
     runs-on: macos-latest
     steps:
-      - name: Checkout
+      - name: 检出代码
         uses: actions/checkout@v2
-      - name: Setup Java JDK
+      - name: 安装 JDK
         uses: actions/setup-java@v1
         with:
           java-version: "12.x"
-      - name: Flutter Action
+      - name: 安装 Flutter
         uses: subosito/flutter-action@v1
         with:
           channel: "stable"
           flutter-version: "2.5.x"
       - run: flutter pub get
-      - run: flutter build apk --release
+      - name: 配置 Android 打包参数
+        run: |
+          echo "storeFile=key.jks" >> key.properties
+          echo "keyAlias=$KEYSTORE_KEY_ALIAS" >> key.properties
+          echo "storePassword=$KEYSTORE_STORE_PASSWORD" >> key.properties
+          echo "keyPassword=$KEYSTORE_KEY_PASSWORD" >> key.properties
+        env:
+          KEYSTORE_KEY_ALIAS: key
+          KEYSTORE_KEY_PASSWORD: 123321
+          KEYSTORE_STORE_PASSWORD: 123321
+        working-directory: android
+      - name: 构建 Android Apk
+        run: flutter build apk --release
 
